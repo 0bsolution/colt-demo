@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+const axios = require('axios');
 const express = require('express');
 const app = express();
 const PORT = 3000;
@@ -6,10 +6,9 @@ const PORT = 3000;
 app.get('/convert-to-usd/:currency', async (req, res) => {
   const { currency } = req.params;
   try {
-    fetch('https://api.exchangerate-api.com/v4/latest/USD')
-      .then(response => response.json())
-      .then(data => {
-        const rate = data.rates[currency.toUpperCase()];
+    axios.get('https://api.exchangerate-api.com/v4/latest/USD')
+      .then(response => {
+        const rate = response.data.rates[currency.toUpperCase()];
         if (!rate) {
           return res.status(404).send('Currency not supported.');
         }
@@ -32,14 +31,13 @@ app.get('/crypto-to-usd/:currency', async (req, res) => {
   const { currency } = req.params;
   try {
     const url = `https://api.coingecko.com/api/v3/simple/price?ids=${currency}&vs_currencies=usd`;
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (!data[currency]) {
+    axios.get(url)
+      .then(response => {
+        if (!response.data[currency]) {
           return res.status(404).send('Currency not supported.');
         }
         const responseObj = {
-          convertedAmount: data[currency].usd,
+          convertedAmount: response.data[currency].usd,
           currency: 'USD'
         };
         res.json(responseObj);
